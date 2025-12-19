@@ -53,4 +53,4 @@ router.get('/profile', authMiddleware, async (req, res) => {
   res.json({ success: true, user: req.user });
 });
 
-module.exports = router;
+module.exports = router; 
