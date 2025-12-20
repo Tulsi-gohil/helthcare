@@ -4,27 +4,48 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 
 const app = express();
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+
+/* =======================
+   MIDDLEWARE
+======================= */
+app.use(cors({
+  origin: 'http://localhost:3000', // React frontend
+  credentials: true
+}));
 app.use(express.json());
 
-app.get('/', (req, res) => res.send('Backend is running successfully 🚀'));
+/* =======================
+   HEALTH CHECK
+======================= */
+app.get('/', (req, res) => {
+  res.status(200).send('Backend is running successfully 🚀');
+});
 
-const start = async () => {
-  await connectDB();
+/* =======================
+   START SERVER
+======================= */
+const startServer = async () => {
+  try {
+    await connectDB();
 
-  app.use('/api/auth', require('./routes/authRoutes'));
-  app.use('/api/appointments', require('./routes/appointmentRoutes'));
+    // Routes
+    app.use('/api/auth', require('./routes/authRoutes'));
+    app.use('/api/appointments', require('./routes/appointmentRoutes'));
 
-    // development-only seed route
+    // Dev-only seed route
     if (process.env.NODE_ENV !== 'production') {
       app.use('/api/seed', require('./routes/seedRoutes'));
     }
 
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`));
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on http://localhost:${PORT}`);
+    });
+
+  } catch (error) {
+    console.error('❌ Server failed to start:', error.message);
+    process.exit(1);
+  }
 };
 
-start().catch(err => {
-  console.error('Failed to start server:', err);
-  process.exit(1);
-});
+startServer();
